@@ -21,6 +21,11 @@ DRAWDOWN = Gauge(
 )
 FEES = Gauge("foundation_lane_fees", "Accumulated paper fees", ["lane"])
 OPEN_POSITIONS = Gauge("foundation_lane_open_positions", "Open paper positions", ["lane"])
+STRATEGY_INFO = Gauge(
+    "foundation_lane_strategy_info",
+    "Active strategy release",
+    ["lane", "strategy", "ai_enabled", "release_id"],
+)
 INITIAL_CAPITAL = float(os.getenv("INITIAL_CAPITAL", "310"))
 
 
@@ -29,12 +34,28 @@ def lane_ids() -> list[str]:
         return list(yaml.safe_load(handle)["lanes"])
 
 
+def strategy_metadata() -> tuple[dict, str]:
+    with Path("/app/config/strategies.yml").open(encoding="utf-8") as handle:
+        strategies = yaml.safe_load(handle)["lanes"]
+    with Path("/app/config/release.yml").open(encoding="utf-8") as handle:
+        release_id = yaml.safe_load(handle)["release_id"]
+    return strategies, release_id
+
+
 LANES = lane_ids()
 LEDGER = PaperLedger(os.getenv("ARENA_DB_PATH", "/data/arena.db"), LANES, INITIAL_CAPITAL)
 EXECUTION = ExecutionSettings(
     fee_bps=float(os.getenv("PAPER_FEE_BPS", "60")),
     slippage_bps=float(os.getenv("PAPER_SLIPPAGE_BPS", "5")),
 )
+STRATEGIES, RELEASE_ID = strategy_metadata()
+for active_lane, metadata in STRATEGIES.items():
+    STRATEGY_INFO.labels(
+        active_lane,
+        metadata["name"],
+        str(metadata["ai_enabled"]).lower(),
+        RELEASE_ID,
+    ).set(1)
 
 
 def record_metrics(rows: list[dict]) -> None:

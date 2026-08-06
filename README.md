@@ -41,6 +41,8 @@ OctoBot è disponibile per dashboard e backtest separati. Non possiede chiavi ex
 
 Dettagli: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
+Il flusso ChatGPT/Codex → GitHub → OpenClaw → VPS è descritto in [`docs/CONTROL_PLANE.md`](docs/CONTROL_PLANE.md). OpenClaw interviene solo quando richiesto dall’operatore.
+
 ## Avvio locale senza GPU
 
 ```bash

@@ -8,6 +8,7 @@ env:
 
 validate:
 	python3 scripts/validate_config.py
+	python3 scripts/validate_strategy_release.py
 
 test:
 	python3 -m unittest discover -s tests -v

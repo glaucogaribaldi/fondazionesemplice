@@ -67,6 +67,17 @@
         {"expr": "foundation_lane_fees", "legendFormat": "Fee {{lane}}", "instant": true}
       ],
       "gridPos": {"h": 9, "w": 24, "x": 0, "y": 23}
+    },
+    {
+      "type": "table",
+      "title": "Release e strategie attive",
+      "targets": [
+        {"expr": "foundation_lane_strategy_info", "legendFormat": "{{lane}}", "instant": true, "format": "table"}
+      ],
+      "transformations": [
+        {"id": "organize", "options": {"excludeByName": {"Time": true, "Value": true, "__name__": true, "instance": true, "job": true}, "renameByName": {"lane": "Corsia", "strategy": "Strategia", "ai_enabled": "AI", "release_id": "Release"}}}
+      ],
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 32}
     }
   ],
   "refresh": "30s",

@@ -17,6 +17,7 @@ required_files = [
     ".env.example",
     "config/risk.yml",
     "config/strategies.yml",
+    "config/release.yml",
     "docs/INSTALL_OPENCLAW.md",
 ]
 for relative in required_files:
@@ -34,7 +35,15 @@ if lanes != {f"lane_{number}" for number in range(1, 6)}:
     fail("strategies.yml must define exactly lane_1 through lane_5")
 
 compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
-for service in ["decision-service", "kronos", "nemotron", "arena", "octobot", "postgres"]:
+for service in [
+    "decision-service",
+    "kronos",
+    "nemotron",
+    "arena",
+    "market-feed",
+    "octobot",
+    "postgres",
+]:
     if not re.search(rf"^  {re.escape(service)}:$", compose, flags=re.MULTILINE):
         fail(f"compose service missing: {service}")
 

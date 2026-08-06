@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: fondazione
+      POSTGRES_USER: fondazione
+      POSTGRES_PASSWORD: change_me
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  grafana:
+    image: grafana/grafana:latest
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+
+  arena-manager:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./arena:/app
+    command: ["python","main.py"]
+    depends_on:
+      - postgres
+
+  risk-engine:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./risk-engine:/app
+    command: ["python","main.py"]
+
+  octobot:
+    image: drakkarsoftware/octobot:stable
+    environment:
+      - TRADING_MODE=PAPER
+    ports:
+      - "5001:5001"
+
+volumes:
+  postgres_data:

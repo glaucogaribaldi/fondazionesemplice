@@ -40,7 +40,7 @@ def main() -> int:
     payload = {
         "request_id": f"e2e-{int(now.timestamp())}",
         "mode": "paper",
-        "symbol": "BTC/USDC",
+        "symbol": "BTC/USDT",
         "timeframe": "300s",
         "market": {
             "timestamp": now.isoformat(),

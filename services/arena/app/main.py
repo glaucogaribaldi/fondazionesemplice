@@ -14,6 +14,13 @@ from .ledger import ExecutionSettings, PaperLedger
 app = FastAPI(title="Fondazione Arena", version="0.2.0")
 app.mount("/metrics", make_asgi_app())
 EQUITY = Gauge("foundation_lane_equity", "Paper equity", ["lane"])
+CASH = Gauge("foundation_lane_cash", "Paper cash", ["lane"])
+RETURN = Gauge("foundation_lane_return_pct", "Paper return percent", ["lane"])
+DRAWDOWN = Gauge(
+    "foundation_lane_max_drawdown_pct", "Maximum paper drawdown percent", ["lane"]
+)
+FEES = Gauge("foundation_lane_fees", "Accumulated paper fees", ["lane"])
+OPEN_POSITIONS = Gauge("foundation_lane_open_positions", "Open paper positions", ["lane"])
 INITIAL_CAPITAL = float(os.getenv("INITIAL_CAPITAL", "310"))
 
 
@@ -30,6 +37,20 @@ EXECUTION = ExecutionSettings(
 )
 
 
+def record_metrics(rows: list[dict]) -> None:
+    for row in rows:
+        lane = row["lane_id"]
+        EQUITY.labels(lane).set(row["equity"])
+        CASH.labels(lane).set(row["cash"])
+        RETURN.labels(lane).set(row["return_pct"])
+        DRAWDOWN.labels(lane).set(row["max_drawdown_pct"])
+        FEES.labels(lane).set(row["fees"])
+        OPEN_POSITIONS.labels(lane).set(len(row["positions"]))
+
+
+record_metrics(LEDGER.ranking())
+
+
 def authorize(x_api_key: Annotated[str, Header()] = "") -> None:
     expected = os.getenv("DECISION_API_KEY", "")
     if not expected or x_api_key != expected:
@@ -44,8 +65,7 @@ async def healthz() -> dict:
 @app.get("/v1/ranking", dependencies=[Depends(authorize)])
 async def ranking() -> list[dict]:
     result = LEDGER.ranking()
-    for row in result:
-        EQUITY.labels(row["lane_id"]).set(row["equity"])
+    record_metrics(result)
     return result
 
 
@@ -97,11 +117,11 @@ async def evaluate(snapshot: dict) -> dict:
             EXECUTION,
         )
         executions.append(execution)
-        EQUITY.labels(decision["lane_id"]).set(execution["portfolio"]["equity"])
+    result = LEDGER.ranking()
+    record_metrics(result)
     return {
         "request_id": snapshot["request_id"],
         "decisions": decisions,
         "executions": executions,
-        "ranking": LEDGER.ranking(),
+        "ranking": result,
     }
-

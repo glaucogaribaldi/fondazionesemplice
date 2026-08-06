@@ -42,6 +42,8 @@ async def process_product(client: httpx.AsyncClient, product: str) -> None:
     ticker = ticker_response.json()
     latest_timestamp = candles[-1]["timestamp"]
     request_id = f"coinbase-{product}-{latest_timestamp}"
+    if STATE["products"].get(product, {}).get("request_id") == request_id:
+        return
     payload = {
         "request_id": request_id,
         "mode": "paper",

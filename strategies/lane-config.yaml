@@ -1,0 +1,20 @@
+lanes:
+  lane_001:
+    name: kronos_nemotron_conservative
+    initial_capital: 310
+  lane_002:
+    name: kronos_nemotron_aggressive
+    initial_capital: 310
+  lane_003:
+    name: kronos_quant_only
+    initial_capital: 310
+  lane_004:
+    name: technical_baseline
+    initial_capital: 310
+  lane_005:
+    name: experimental_agent
+    initial_capital: 310
+
+trading:
+  mode: PAPER
+  live_enabled: false

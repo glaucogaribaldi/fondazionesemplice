@@ -16,6 +16,6 @@ I parametri sono in `config/strategies.yml`. Nessuna corsia può modificare la p
 
 La classifica deve includere rendimento netto, max drawdown, Sortino, profit factor, fee, slippage, turnover, stabilità del modello e decisioni respinte. La semplice equity non è sufficiente per promuovere una strategia.
 
-## Realismo paper
+## Simulazione paper
 
-Prima di qualsiasi promozione, il simulatore deve modellare spread, fee, slippage, ordini non eseguiti, fill parziali, latenza, timeout e capitale bloccato. L’Arena di questa release gestisce profili e decisioni; la contabilizzazione ad alta fedeltà è affidata a OctoBot o a un adapter versionato successivo.
+Arena mantiene un ledger persistente per corsia e modella prezzo bid/ask, fee e slippage configurabili. Gestisce acquisti, vendite, costo medio, P&L realizzato, equity e drawdown. Fill parziali, latenza e liquidità di secondo livello restano fuori da questa release e devono essere aggiunti prima di valutare il live.

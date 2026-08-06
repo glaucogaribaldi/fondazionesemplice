@@ -10,6 +10,7 @@ deadline=$((SECONDS + wait_seconds))
 urls=(
   "http://127.0.0.1:8080/healthz"
   "http://127.0.0.1:8082/healthz"
+  "http://127.0.0.1:8083/healthz"
   "http://127.0.0.1:30000/health"
 )
 for url in "${urls[@]}"; do
@@ -21,4 +22,8 @@ done
 
 unhealthy="$(docker compose ps --format json | grep -c 'unhealthy' || true)"
 [[ "$unhealthy" == "0" ]] || { docker compose ps; exit 1; }
+set -a
+source .env
+set +a
+python3 scripts/e2e_test.py
 echo "Smoke tests passed."

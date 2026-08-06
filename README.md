@@ -2,7 +2,7 @@
 
 Appliance di trading AI **paper-first** per una VM GCP `g2-standard-8` con NVIDIA L4. Combina Kronos-base, NVIDIA Nemotron Nano 9B v2 su SGLang, un Risk Engine deterministico, cinque corsie paper isolate e OctoBot.
 
-> **Stato: alpha di ricerca.** Non è consulenza finanziaria e non promette rendimenti. L’integrazione di esecuzione con OctoBot resta disabilitata finché il ciclo paper/shadow non è stato validato.
+> **Stato: paper alpha.** Non è consulenza finanziaria e non promette rendimenti. Il sistema simula operazioni ma non invia ordini a Coinbase.
 
 ## Principi di sicurezza
 
@@ -16,10 +16,13 @@ Appliance di trading AI **paper-first** per una VM GCP `g2-standard-8` con NVIDI
 ## Architettura
 
 ```text
-OctoBot / market snapshot
+Coinbase market data pubblici
            │
            ▼
-      Arena Manager ───── cinque portafogli paper
+      Market Feed
+           │
+           ▼
+      Arena Manager ───── cinque ledger paper persistenti
            │
            ▼
     Decision Service
@@ -33,6 +36,8 @@ OctoBot / market snapshot
              ▼
        BUY / SELL / HOLD
 ```
+
+OctoBot è disponibile per dashboard e backtest separati. Non possiede chiavi exchange e non è nel percorso di esecuzione della release paper.
 
 Dettagli: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
@@ -53,6 +58,7 @@ Interfacce locali:
 - Grafana: `http://127.0.0.1:3000`
 - Decision API: `http://127.0.0.1:8080/docs`
 - Arena API: `http://127.0.0.1:8082/docs`
+- Market Feed: `http://127.0.0.1:8083/healthz`
 
 ## Avvio sulla L4
 
@@ -83,7 +89,7 @@ La procedura è in [`docs/INSTALL_OPENCLAW.md`](docs/INSTALL_OPENCLAW.md). Lo sk
 
 1. mock locale;
 2. arena paper sulla L4;
-3. backtest con fee, spread e slippage;
+3. raccolta di risultati con fee, spread e slippage;
 4. shadow live senza invio ordini;
 5. revisione manuale;
 6. capitale reale limitato, solo dopo la checklist in [`docs/PAPER_TO_LIVE.md`](docs/PAPER_TO_LIVE.md).

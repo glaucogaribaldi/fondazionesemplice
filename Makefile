@@ -1,4 +1,4 @@
-.PHONY: help env validate test mock-up gpu-up down logs
+.PHONY: help env validate test e2e mock-up gpu-up down logs
 
 help:
 	@printf '%s\n' 'make env       Create .env from template' 'make validate  Validate configuration' 'make test      Run unit tests' 'make mock-up   Start CPU/mock stack' 'make gpu-up    Start L4 production stack' 'make down      Stop stack'
@@ -11,6 +11,9 @@ validate:
 
 test:
 	python3 -m unittest discover -s tests -v
+
+e2e:
+	@set -a; . ./.env; set +a; python3 scripts/e2e_test.py
 
 mock-up: env
 	docker compose --profile mock --profile observability up -d --build

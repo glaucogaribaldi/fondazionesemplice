@@ -1,18 +1,20 @@
 import asyncio
 import os
 from pathlib import Path
+from typing import Annotated
 
 import httpx
 import yaml
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 from prometheus_client import Gauge, make_asgi_app
 
+from .ledger import ExecutionSettings, PaperLedger
 
-app = FastAPI(title="Fondazione Arena", version="0.1.0")
+
+app = FastAPI(title="Fondazione Arena", version="0.2.0")
 app.mount("/metrics", make_asgi_app())
 EQUITY = Gauge("foundation_lane_equity", "Paper equity", ["lane"])
 INITIAL_CAPITAL = float(os.getenv("INITIAL_CAPITAL", "310"))
-PORTFOLIOS: dict[str, dict[str, float]] = {}
 
 
 def lane_ids() -> list[str]:
@@ -20,53 +22,55 @@ def lane_ids() -> list[str]:
         return list(yaml.safe_load(handle)["lanes"])
 
 
-@app.on_event("startup")
-async def initialize() -> None:
-    for lane_id in lane_ids():
-        PORTFOLIOS[lane_id] = {
-            "initial_capital": INITIAL_CAPITAL,
-            "cash": INITIAL_CAPITAL,
-            "equity": INITIAL_CAPITAL,
-            "realized_pnl": 0,
-            "unrealized_pnl": 0,
-            "fees": 0,
-            "max_drawdown_pct": 0,
-        }
-        EQUITY.labels(lane_id).set(INITIAL_CAPITAL)
+LANES = lane_ids()
+LEDGER = PaperLedger(os.getenv("ARENA_DB_PATH", "/data/arena.db"), LANES, INITIAL_CAPITAL)
+EXECUTION = ExecutionSettings(
+    fee_bps=float(os.getenv("PAPER_FEE_BPS", "60")),
+    slippage_bps=float(os.getenv("PAPER_SLIPPAGE_BPS", "5")),
+)
+
+
+def authorize(x_api_key: Annotated[str, Header()] = "") -> None:
+    expected = os.getenv("DECISION_API_KEY", "")
+    if not expected or x_api_key != expected:
+        raise HTTPException(status_code=401, detail="invalid API key")
 
 
 @app.get("/healthz")
 async def healthz() -> dict:
-    return {"status": "ok", "lanes": len(PORTFOLIOS)}
+    return {"status": "ok", "lanes": len(LANES), "persistent_ledger": True}
 
 
-@app.get("/v1/ranking")
+@app.get("/v1/ranking", dependencies=[Depends(authorize)])
 async def ranking() -> list[dict]:
-    ordered = sorted(PORTFOLIOS.items(), key=lambda item: item[1]["equity"], reverse=True)
-    return [
-        {"rank": rank, "lane_id": lane_id, **portfolio}
-        for rank, (lane_id, portfolio) in enumerate(ordered, start=1)
-    ]
+    result = LEDGER.ranking()
+    for row in result:
+        EQUITY.labels(row["lane_id"]).set(row["equity"])
+    return result
 
 
-@app.post("/v1/evaluate")
+@app.get("/v1/events", dependencies=[Depends(authorize)])
+async def events(limit: int = 100) -> list[dict]:
+    return LEDGER.events(min(max(limit, 1), 1000))
+
+
+@app.post("/v1/evaluate", dependencies=[Depends(authorize)])
 async def evaluate(snapshot: dict) -> dict:
     required = {"request_id", "mode", "symbol", "timeframe", "market"}
     if missing := required - snapshot.keys():
         raise HTTPException(status_code=422, detail=f"missing fields: {sorted(missing)}")
+    if snapshot["mode"] != "paper":
+        raise HTTPException(status_code=409, detail="arena accepts paper mode only")
+
+    bid = float(snapshot["market"]["bid"])
+    ask = float(snapshot["market"]["ask"])
+    mid = (bid + ask) / 2
 
     async def call_lane(client: httpx.AsyncClient, lane_id: str) -> dict:
         payload = dict(snapshot)
         payload["request_id"] = f"{snapshot['request_id']}-{lane_id}"
         payload["lane_id"] = lane_id
-        payload["portfolio"] = {
-            "equity": PORTFOLIOS[lane_id]["equity"],
-            "cash": PORTFOLIOS[lane_id]["cash"],
-            "daily_pnl_pct": 0,
-            "open_positions": 0,
-            "current_position_pct": 0,
-            "last_trade_at": None,
-        }
+        payload["portfolio"] = LEDGER.snapshot(lane_id, snapshot["symbol"], mid)
         response = await client.post(
             f"{os.environ['DECISION_URL']}/v1/decision",
             json=payload,
@@ -76,8 +80,28 @@ async def evaluate(snapshot: dict) -> dict:
         return response.json()
 
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            decisions = await asyncio.gather(*(call_lane(client, lane) for lane in PORTFOLIOS))
+        async with httpx.AsyncClient(timeout=60) as client:
+            decisions = await asyncio.gather(*(call_lane(client, lane) for lane in LANES))
     except Exception as exc:
         raise HTTPException(status_code=503, detail="decision service unavailable") from exc
-    return {"request_id": snapshot["request_id"], "decisions": decisions}
+
+    executions = []
+    for decision in decisions:
+        execution = LEDGER.execute(
+            snapshot["request_id"],
+            decision["lane_id"],
+            snapshot["symbol"],
+            decision,
+            bid,
+            ask,
+            EXECUTION,
+        )
+        executions.append(execution)
+        EQUITY.labels(decision["lane_id"]).set(execution["portfolio"]["equity"])
+    return {
+        "request_id": snapshot["request_id"],
+        "decisions": decisions,
+        "executions": executions,
+        "ranking": LEDGER.ranking(),
+    }
+

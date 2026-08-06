@@ -77,7 +77,7 @@ services:
       - --port
       - "30000"
       - --mem-fraction-static
-      - ${SGLANG_MEM_FRACTION:-0.78}
+      - ${SGLANG_MEM_FRACTION:-0.88}
       - --trust-remote-code
     environment:
       HF_TOKEN: ${HF_TOKEN:-}

@@ -6,11 +6,13 @@ from datetime import UTC, datetime
 import httpx
 from fastapi import FastAPI, HTTPException
 
+from .helpers import normalize_candles, product_to_symbol
+
 
 EXCHANGE_URL = "https://api.exchange.coinbase.com"
 ARENA_URL = os.getenv("ARENA_URL", "http://arena:8082")
 API_KEY = os.getenv("DECISION_API_KEY", "")
-PRODUCTS = [item.strip() for item in os.getenv("COINBASE_PRODUCTS", "BTC-USDC").split(",")]
+PRODUCTS = [item.strip() for item in os.getenv("COINBASE_PRODUCTS", "BTC-USDT").split(",")]
 GRANULARITY = int(os.getenv("MARKET_TIMEFRAME_SECONDS", "300"))
 POLL_SECONDS = int(os.getenv("MARKET_POLL_SECONDS", "30"))
 CANDLE_LIMIT = max(32, min(int(os.getenv("MARKET_CANDLE_LIMIT", "96")), 300))
@@ -20,26 +22,6 @@ STATE: dict = {
     "last_success_at": None,
     "last_error": None,
 }
-
-
-def normalize_candles(rows: list[list[float]], now: int) -> list[dict]:
-    closed_before = now - (now % GRANULARITY)
-    candles = []
-    for timestamp, low, high, opening, close, volume in rows:
-        if int(timestamp) >= closed_before:
-            continue
-        candles.append(
-            {
-                "timestamp": datetime.fromtimestamp(timestamp, UTC).isoformat(),
-                "open": opening,
-                "high": high,
-                "low": low,
-                "close": close,
-                "volume": volume,
-            }
-        )
-    candles.sort(key=lambda item: item["timestamp"])
-    return candles[-CANDLE_LIMIT:]
 
 
 async def process_product(client: httpx.AsyncClient, product: str) -> None:
@@ -53,7 +35,7 @@ async def process_product(client: httpx.AsyncClient, product: str) -> None:
     candles_response.raise_for_status()
     ticker_response.raise_for_status()
     now = int(datetime.now(UTC).timestamp())
-    candles = normalize_candles(candles_response.json(), now)
+    candles = normalize_candles(candles_response.json(), now, GRANULARITY, CANDLE_LIMIT)
     if len(candles) < 32:
         raise ValueError(f"only {len(candles)} closed candles for {product}")
 
@@ -63,7 +45,7 @@ async def process_product(client: httpx.AsyncClient, product: str) -> None:
     payload = {
         "request_id": request_id,
         "mode": "paper",
-        "symbol": product.replace("-", "/"),
+        "symbol": product_to_symbol(product),
         "timeframe": f"{GRANULARITY}s",
         "market": {
             "timestamp": datetime.now(UTC).isoformat(),

@@ -21,7 +21,7 @@ Procedura:
 4. Ripristina il file .env locale e aggiungi, se assenti:
    PAPER_FEE_BPS=60
    PAPER_SLIPPAGE_BPS=5
-   COINBASE_PRODUCTS=BTC-USDC,ETH-USDC
+   COINBASE_PRODUCTS=BTC-USDT,ETH-USDT
    MARKET_TIMEFRAME_SECONDS=300
    MARKET_POLL_SECONDS=30
    MARKET_CANDLE_LIMIT=96
@@ -32,5 +32,7 @@ Procedura:
 9. Conferma che arena-data esiste, che /v1/ranking contiene cinque corsie e che un riavvio di Arena conserva gli eventi.
 10. Fornisci commit installato, stato container, risultato test, stato paper/live e gli eventuali errori. Non dichiarare successo se manca una verifica.
 ```
+
+Il simbolo inviato ad Arena deve conservare la valuta reale del mercato sorgente: `BTC-USDT` diventa `BTC/USDT`, mai `BTC/USDC`.
 
 Sostituire nel prompt “commit immutabile indicato dall’utente” con l’hash pubblicato per il rilascio.

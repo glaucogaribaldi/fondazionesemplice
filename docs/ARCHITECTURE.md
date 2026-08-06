@@ -23,6 +23,8 @@ Nemotron non chiama strumenti, non legge segreti e non comunica direttamente con
 6. Una violazione o un errore produce `HOLD`.
 7. Arena registra una sola simulazione per coppia `request_id`/corsia, applicando spread, fee e slippage.
 
+Il feed preserva sempre la valuta quotata del prodotto (`BTC-USDT` → `BTC/USDT`). Non converte né rinomina USDT in USDC.
+
 ## Contratto API
 
 Endpoint: `POST /v1/decision`, header `X-API-Key`.

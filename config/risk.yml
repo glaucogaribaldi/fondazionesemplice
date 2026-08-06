@@ -1,6 +1,6 @@
 version: 1
 global:
-  allowed_symbols: [BTC/USDC, ETH/USDC]
+  allowed_symbols: [BTC/USDC, ETH/USDC, BTC/USDT, ETH/USDT]
   allowed_actions: [BUY, SELL, HOLD]
   max_allocation_pct: 20
   max_spread_bps: 35

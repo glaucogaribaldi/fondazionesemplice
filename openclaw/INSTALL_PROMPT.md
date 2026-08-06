@@ -1,0 +1,3 @@
+# Prompt operativo per OpenClaw
+
+Installa il repository `fondazionesemplice` sulla VM dedicata seguendo esclusivamente lo skill `install-fondazionesemplice` incluso nella repository. Prima di qualsiasi cancellazione chiedimi URL GitHub, tag o commit immutabile e la frase esatta `ERASE_FOUNDATION_VM_WITHOUT_BACKUP`. Non creare backup. Cancella i workload Docker esistenti e `/opt/fondazionesemplice`, ma non tentare di ripartizionare il disco di avvio da una sessione attiva. Mantieni obbligatoriamente `TRADING_MODE=paper`, `LIVE_ENABLED=false` e `LIVE_CONFIRMATION` vuoto. Non richiedere né salvare credenziali Coinbase. Al termine verifica GPU, container, health check e restituisci commit installato, stato dei servizi e indirizzi locali.

@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r services/decision-service/requirements.txt -r services/kronos/requirements.txt ruff==0.8.6
+      - run: python scripts/validate_config.py
+      - run: ruff check services tests scripts/validate_config.py
+      - run: python -m unittest discover -s tests -v
+      - run: cp .env.example .env
+      - run: sed -i 's/change-me-with-openssl-rand-hex-32/test-api-key/; s/change-me/test-secret/g' .env
+      - run: docker compose --profile mock --profile observability config --quiet

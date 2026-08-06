@@ -1,0 +1,24 @@
+name: Bug report
+description: Report a reproducible software defect without secrets.
+body:
+  - type: markdown
+    attributes:
+      value: Never attach `.env`, API keys, exchange credentials, or unredacted logs.
+  - type: input
+    id: version
+    attributes:
+      label: Commit or tag
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true

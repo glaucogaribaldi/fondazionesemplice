@@ -41,7 +41,7 @@ def main() -> int:
         "request_id": f"e2e-{int(now.timestamp())}",
         "mode": "paper",
         "symbol": "BTC/USDT",
-        "timeframe": "300s",
+        "timeframe": "5m",
         "market": {
             "timestamp": now.isoformat(),
             "bid": 51_594,
@@ -55,6 +55,9 @@ def main() -> int:
     assert len(first["decisions"]) == 5
     assert len(first["executions"]) == 5
     assert len(first["ranking"]) == 5
+    assert all(
+        "FAIL_CLOSED" not in decision["reason_codes"] for decision in first["decisions"]
+    ), "one or more decision paths failed closed"
     first_ids = [item["event"]["id"] for item in first["executions"]]
     second_ids = [item["event"]["id"] for item in second["executions"]]
     assert first_ids == second_ids, "duplicate request was not idempotent"

@@ -14,6 +14,7 @@ from .risk import evaluate_risk
 app = FastAPI(title="Fondazione Decision Service", version="0.1.0")
 app.mount("/metrics", make_asgi_app())
 DECISIONS = Counter("foundation_decisions_total", "Decisions", ["lane", "action", "approved"])
+REASONS = Counter("foundation_decision_reasons_total", "Decision reasons", ["lane", "reason"])
 
 
 def authorize(x_api_key: Annotated[str, Header()] = "") -> None:
@@ -56,6 +57,8 @@ async def decide(request: DecisionRequest) -> DecisionResponse:
         raise HTTPException(status_code=404, detail=f"unknown lane: {request.lane_id}") from exc
     except Exception as exc:
         DECISIONS.labels(request.lane_id, "HOLD", "false").inc()
+        REASONS.labels(request.lane_id, "FAIL_CLOSED").inc()
+        REASONS.labels(request.lane_id, type(exc).__name__.upper()).inc()
         return DecisionResponse(
             request_id=request.request_id,
             lane_id=request.lane_id,
@@ -72,6 +75,8 @@ async def decide(request: DecisionRequest) -> DecisionResponse:
         )
 
     DECISIONS.labels(request.lane_id, result.action, str(result.approved).lower()).inc()
+    for reason in result.reasons:
+        REASONS.labels(request.lane_id, reason).inc()
     return DecisionResponse(
         request_id=request.request_id,
         lane_id=request.lane_id,

@@ -28,3 +28,18 @@ def product_to_symbol(product: str) -> str:
     if len(parts) != 2 or not all(parts):
         raise ValueError(f"invalid Coinbase product: {product}")
     return "/".join(parts)
+
+
+def timeframe_label(granularity: int) -> str:
+    labels = {
+        60: "1m",
+        300: "5m",
+        900: "15m",
+        3_600: "1h",
+        21_600: "6h",
+        86_400: "1d",
+    }
+    try:
+        return labels[granularity]
+    except KeyError as exc:
+        raise ValueError(f"unsupported Coinbase granularity: {granularity}") from exc

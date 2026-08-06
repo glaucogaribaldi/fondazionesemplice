@@ -32,3 +32,9 @@ class MarketFeedTests(unittest.TestCase):
     def test_invalid_product_is_rejected(self):
         with self.assertRaises(ValueError):
             MODULE.product_to_symbol("BTCUSDT")
+
+    def test_granularity_uses_kronos_timeframe(self):
+        self.assertEqual(MODULE.timeframe_label(300), "5m")
+        self.assertEqual(MODULE.timeframe_label(3_600), "1h")
+        with self.assertRaises(ValueError):
+            MODULE.timeframe_label(120)

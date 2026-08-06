@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 import httpx
 from fastapi import FastAPI, HTTPException
 
-from .helpers import normalize_candles, product_to_symbol
+from .helpers import normalize_candles, product_to_symbol, timeframe_label
 
 
 EXCHANGE_URL = "https://api.exchange.coinbase.com"
@@ -48,7 +48,7 @@ async def process_product(client: httpx.AsyncClient, product: str) -> None:
         "request_id": request_id,
         "mode": "paper",
         "symbol": product_to_symbol(product),
-        "timeframe": f"{GRANULARITY}s",
+        "timeframe": timeframe_label(GRANULARITY),
         "market": {
             "timestamp": datetime.now(UTC).isoformat(),
             "bid": float(ticker["bid"]),

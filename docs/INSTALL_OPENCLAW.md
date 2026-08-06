@@ -28,7 +28,7 @@ OpenClaw deve prima clonare e ispezionare il repository, poi eseguire:
 
 ```bash
 sudo ./scripts/install_vm.sh \
-  --repo https://github.com/OWNER/fondazionesemplice.git \
+  --repo https://github.com/glaucogaribaldi/fondazionesemplice.git \
   --ref v0.1.0 \
   --confirm ERASE_FOUNDATION_VM_WITHOUT_BACKUP
 ```

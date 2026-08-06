@@ -7,7 +7,7 @@ git init
 git add .
 git commit -m "feat: scaffold paper-first trading appliance"
 git branch -M main
-git remote add origin https://github.com/OWNER/fondazionesemplice.git
+git remote add origin https://github.com/glaucogaribaldi/fondazionesemplice.git
 git push -u origin main
 ```
 

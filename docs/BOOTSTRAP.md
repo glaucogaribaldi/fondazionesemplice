@@ -8,7 +8,7 @@ Eseguire per almeno 72 ore le cinque corsie su BTC/USDT ed ETH/USDT, verificando
 
 ## Condizioni iniziali
 
-- release `bootstrap-paper-v1.1`;
+- release `bootstrap-paper-v1.2`;
 - timeframe `5m` compatibile con Kronos;
 - capitale virtuale invariato;
 - fee e slippage attivi;
@@ -26,4 +26,4 @@ Eseguire per almeno 72 ore le cinque corsie su BTC/USDT ed ETH/USDT, verificando
 
 Se tutte le corsie rimangono `HOLD`, si analizzano forecast, confidenza e reason code prima di cambiare una soglia. Non si abbassano i controlli alla cieca.
 
-Il primo avvio della release `v1.1` usa una cache Kronos separata da SGLang e può riscaricare i pesi. Il servizio diventa sano solo dopo caricamento e warm-up completi.
+Le release dalla `v1.1` usano una cache Kronos separata da SGLang e possono riscaricare i pesi al primo avvio. Il servizio diventa sano solo dopo caricamento e warm-up completi.

@@ -87,6 +87,23 @@
       ],
       "fieldConfig": {"defaults": {"decimals": 0}, "overrides": []},
       "gridPos": {"h": 9, "w": 24, "x": 0, "y": 40}
+    },
+    {
+      "type": "text",
+      "title": "Metodo e architettura",
+      "options": {
+        "mode": "markdown",
+        "content": "## Fondazione Semplice\nScarica il documento completo sul metodo, le cinque strategie, l'architettura hardware e i motori decisionali.\n\n[Scarica il PDF](/fondazione-semplice-metodo.pdf)"
+      },
+      "gridPos": {"h": 7, "w": 24, "x": 0, "y": 49}
+    },
+    {
+      "type": "table",
+      "title": "Prima mossa per corsia",
+      "targets": [
+        {"expr": "sum by (lane) (foundation_decisions_total)", "legendFormat": "{{lane}}", "instant": true, "format": "table"}
+      ],
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 56}
     }
   ],
   "refresh": "30s",

@@ -45,6 +45,8 @@ Il flusso ChatGPT/Codex → GitHub → OpenClaw → VPS è descritto in [`docs/C
 
 La prima messa in osservazione delle cinque corsie segue [`docs/BOOTSTRAP.md`](docs/BOOTSTRAP.md).
 
+La pubblicazione HTTPS su `fondazione.pianodivino.com` e il download del PDF metodologico sono descritti in [`docs/PUBLIC_DASHBOARD.md`](docs/PUBLIC_DASHBOARD.md).
+
 ## Avvio locale senza GPU
 
 ```bash

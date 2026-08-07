@@ -195,6 +195,10 @@ services:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
       GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_DOMAIN: ${FOUNDATION_DOMAIN:-localhost}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://127.0.0.1:3000}
+      GF_SECURITY_COOKIE_SECURE: ${GRAFANA_COOKIE_SECURE:-false}
+      GF_SECURITY_COOKIE_SAMESITE: strict
     volumes:
       - grafana-data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
@@ -202,6 +206,23 @@ services:
     ports:
       - "${GRAFANA_BIND:-127.0.0.1}:${GRAFANA_PORT:-3000}:3000"
     depends_on: [prometheus]
+
+  gateway:
+    <<: *common
+    profiles: [public]
+    image: caddy:2.10.2-alpine
+    environment:
+      FOUNDATION_DOMAIN: ${FOUNDATION_DOMAIN:-fondazione.pianodivino.com}
+    volumes:
+      - ./monitoring/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./output/pdf:/srv/pdf:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    depends_on: [grafana]
 
 networks:
   foundation:
@@ -213,3 +234,5 @@ volumes:
   postgres-data:
   prometheus-data:
   grafana-data:
+  caddy-data:
+  caddy-config:

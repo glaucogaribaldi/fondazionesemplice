@@ -19,6 +19,9 @@ required_files = [
     "config/strategies.yml",
     "config/release.yml",
     "docs/INSTALL_OPENCLAW.md",
+    "docs/PUBLIC_DASHBOARD.md",
+    "monitoring/Caddyfile",
+    "output/pdf/fondazione-semplice-metodo.pdf",
 ]
 for relative in required_files:
     if not (ROOT / relative).is_file():
@@ -41,6 +44,7 @@ for service in [
     "nemotron",
     "arena",
     "market-feed",
+    "gateway",
     "octobot",
     "postgres",
 ]:

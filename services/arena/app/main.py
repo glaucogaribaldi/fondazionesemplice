@@ -45,6 +45,7 @@ def strategy_metadata() -> tuple[dict, str]:
 
 LANES = lane_ids()
 LEDGER = PaperLedger(os.getenv("ARENA_DB_PATH", "/data/arena.db"), LANES, INITIAL_CAPITAL)
+SMOKE_LEDGER = PaperLedger("/tmp/fondazione-smoke/arena.db", LANES, INITIAL_CAPITAL)
 EXECUTION = ExecutionSettings(
     fee_bps=float(os.getenv("PAPER_FEE_BPS", "60")),
     slippage_bps=float(os.getenv("PAPER_SLIPPAGE_BPS", "5")),
@@ -96,8 +97,9 @@ async def events(limit: int = 100) -> list[dict]:
     return LEDGER.events(min(max(limit, 1), 1000))
 
 
-@app.post("/v1/evaluate", dependencies=[Depends(authorize)])
-async def evaluate(snapshot: dict) -> dict:
+async def evaluate_with_ledger(
+    snapshot: dict, ledger: PaperLedger, *, publish_metrics: bool
+) -> dict:
     required = {"request_id", "mode", "symbol", "timeframe", "market"}
     if missing := required - snapshot.keys():
         raise HTTPException(status_code=422, detail=f"missing fields: {sorted(missing)}")
@@ -112,7 +114,7 @@ async def evaluate(snapshot: dict) -> dict:
         payload = dict(snapshot)
         payload["request_id"] = f"{snapshot['request_id']}-{lane_id}"
         payload["lane_id"] = lane_id
-        payload["portfolio"] = LEDGER.snapshot(lane_id, snapshot["symbol"], mid)
+        payload["portfolio"] = ledger.snapshot(lane_id, snapshot["symbol"], mid)
         response = await client.post(
             f"{os.environ['DECISION_URL']}/v1/decision",
             json=payload,
@@ -129,7 +131,7 @@ async def evaluate(snapshot: dict) -> dict:
 
     executions = []
     for decision in decisions:
-        execution = LEDGER.execute(
+        execution = ledger.execute(
             snapshot["request_id"],
             decision["lane_id"],
             snapshot["symbol"],
@@ -139,11 +141,22 @@ async def evaluate(snapshot: dict) -> dict:
             EXECUTION,
         )
         executions.append(execution)
-    result = LEDGER.ranking()
-    record_metrics(result)
+    result = ledger.ranking()
+    if publish_metrics:
+        record_metrics(result)
     return {
         "request_id": snapshot["request_id"],
         "decisions": decisions,
         "executions": executions,
         "ranking": result,
     }
+
+
+@app.post("/v1/evaluate", dependencies=[Depends(authorize)])
+async def evaluate(snapshot: dict) -> dict:
+    return await evaluate_with_ledger(snapshot, LEDGER, publish_metrics=True)
+
+
+@app.post("/v1/smoke-evaluate", dependencies=[Depends(authorize)])
+async def smoke_evaluate(snapshot: dict) -> dict:
+    return await evaluate_with_ledger(snapshot, SMOKE_LEDGER, publish_metrics=False)

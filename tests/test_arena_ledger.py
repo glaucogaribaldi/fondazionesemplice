@@ -59,3 +59,28 @@ class PaperLedgerTests(unittest.TestCase):
         ranking = self.ledger.ranking()
         self.assertEqual([row["rank"] for row in ranking], [1, 2])
         self.assertEqual({row["lane_id"] for row in ranking}, {"lane_1", "lane_2"})
+
+    def test_separate_smoke_ledger_cannot_mark_live_paper_positions(self):
+        decision = {
+            "decision": "BUY",
+            "approved_by_risk_engine": True,
+            "allocation_pct": 1,
+            "reason_codes": ["BOOTSTRAP_PROBE"],
+        }
+        self.ledger.execute(
+            "coinbase-real", "lane_1", "BTC/USDT", decision, 64_740, 64_755, self.settings
+        )
+        paper_equity = self.ledger.snapshot("lane_1", "BTC/USDT", 64_750)["equity"]
+
+        smoke_ledger = PaperLedger(
+            str(Path(self.tempdir.name) / "smoke.db"), ["lane_1", "lane_2"], 1_000
+        )
+        try:
+            smoke_ledger.snapshot("lane_1", "BTC/USDT", 51_595)
+            unchanged_equity = next(
+                row["equity"] for row in self.ledger.ranking() if row["lane_id"] == "lane_1"
+            )
+        finally:
+            smoke_ledger.connection.close()
+
+        self.assertAlmostEqual(unchanged_equity, paper_equity)

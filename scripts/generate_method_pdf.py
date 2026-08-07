@@ -196,7 +196,7 @@ story = [
             ["Capitale virtuale", "310 USDT per corsia"],
             ["Orizzonte dichiarato", "Ricerca del percorso verso 5.000 USDT"],
             ["Principio sovrano", "Nessun modello puo oltrepassare il Risk Engine"],
-            ["Release metodologica", "bootstrap-paper-v1.3"],
+            ["Release metodologica", "bootstrap-paper-v1.4"],
         ],
         [48 * mm, 112 * mm],
         header=False,
@@ -376,7 +376,8 @@ story = [
     section(
         "Osservabilita",
         "Grafana mostra equity, rendimento, cash, fee, posizioni, drawdown, azioni e reason code. Prometheus "
-        "raccoglie contatori e gauge. Il ledger resta la fonte persistente per fill e portafogli.",
+        "raccoglie contatori e gauge. Il ledger resta la fonte persistente per fill e portafogli. Gli smoke "
+        "test operano su un ledger effimero isolato e non possono alterare le corsie osservate.",
     ),
     section(
         "Dominio pubblico",

@@ -49,7 +49,7 @@ def main() -> int:
             "candles": candles,
         },
     }
-    url = os.getenv("ARENA_TEST_URL", "http://127.0.0.1:8082/v1/evaluate")
+    url = os.getenv("ARENA_TEST_URL", "http://127.0.0.1:8082/v1/smoke-evaluate")
     first = request_json(url, api_key, payload)
     second = request_json(url, api_key, payload)
     assert len(first["decisions"]) == 5
@@ -61,7 +61,7 @@ def main() -> int:
     first_ids = [item["event"]["id"] for item in first["executions"]]
     second_ids = [item["event"]["id"] for item in second["executions"]]
     assert first_ids == second_ids, "duplicate request was not idempotent"
-    print("End-to-end paper test passed: 5 lanes, persistent ledger, idempotent events.")
+    print("End-to-end paper test passed: 5 lanes, isolated ledger, idempotent events.")
     return 0
 
 

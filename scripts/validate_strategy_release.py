@@ -62,6 +62,29 @@ if not allocation_match:
     fail("risk max_allocation_pct is required")
 max_allocation = float(allocation_match.group(1))
 
+probe_values = {
+    key: scalar(value)
+    for key, value in re.findall(
+        r"^  ([a-z_]+):\s*(.+)$",
+        release_text.split("bootstrap_probe:", 1)[1] if "bootstrap_probe:" in release_text else "",
+        flags=re.MULTILINE,
+    )
+}
+if probe_values:
+    if not isinstance(probe_values.get("enabled"), bool):
+        fail("bootstrap_probe.enabled must be boolean")
+    if not str(probe_values.get("request_id_prefix", "")).startswith("coinbase-"):
+        fail("bootstrap_probe.request_id_prefix must identify the Coinbase market feed")
+    symbol = probe_values.get("symbol")
+    allowed_symbols = set(
+        re.search(r"allowed_symbols:\s*\[([^]]+)]", risk_text).group(1).split(",")
+    )
+    if symbol not in {item.strip() for item in allowed_symbols}:
+        fail("bootstrap_probe.symbol must be allowed by risk.yml")
+    number_between(probe_values, "allocation_pct", 0.1, max_allocation)
+    number_between(probe_values, "stop_loss_pct", 0.25, 3.0)
+    number_between(probe_values, "take_profit_pct", 0.1, 8.0)
+
 names = []
 for lane_id, lane in lanes.items():
     name = lane.get("name")
@@ -78,5 +101,10 @@ for lane_id, lane in lanes.items():
 
 if len(names) != len(set(names)):
     fail("strategy names must be unique")
+
+if probe_values and float(probe_values["allocation_pct"]) > min(
+    float(lane["max_position_pct"]) for lane in lanes.values()
+):
+    fail("bootstrap probe allocation exceeds a lane position limit")
 
 print(f"Strategy release {release_id} is valid.")

@@ -1,5 +1,18 @@
 # Bootstrap paper
 
+La release `bootstrap-paper-v1.3` esegue una sonda operativa iniziale per rendere verificabile l'intera catena di paper trading.
+
+- una sola operazione `BUY` per ciascuna corsia;
+- simbolo fisso `BTC/USDT`;
+- attivazione esclusiva su una candela reale identificata dal Market Feed Coinbase;
+- allocazione pari all'1% dell'equity;
+- reason code esplicito `BOOTSTRAP_PROBE`;
+- esecuzione solo in modalita `paper`, mai in `shadow` o `live`;
+- approvazione obbligatoria del Risk Engine;
+- nessuna ripetizione dopo il primo trade della corsia.
+
+La sonda non rappresenta una previsione di Kronos o Nemotron. Dopo il fill, le cinque corsie riprendono le rispettive strategie senza ulteriori acquisti forzati.
+
 Il bootstrap è la prima raccolta controllata di dati, non un passaggio al live.
 
 ## Obiettivo
@@ -8,7 +21,7 @@ Eseguire per almeno 72 ore le cinque corsie su BTC/USDT ed ETH/USDT, verificando
 
 ## Condizioni iniziali
 
-- release `bootstrap-paper-v1.2`;
+- release `bootstrap-paper-v1.3`;
 - timeframe `5m` compatibile con Kronos;
 - capitale virtuale invariato;
 - fee e slippage attivi;

@@ -196,7 +196,7 @@ story = [
             ["Capitale virtuale", "310 USDT per corsia"],
             ["Orizzonte dichiarato", "Ricerca del percorso verso 5.000 USDT"],
             ["Principio sovrano", "Nessun modello puo oltrepassare il Risk Engine"],
-            ["Release metodologica", "bootstrap-paper-v1.2"],
+            ["Release metodologica", "bootstrap-paper-v1.3"],
         ],
         [48 * mm, 112 * mm],
         header=False,
@@ -360,9 +360,10 @@ story = [
     ),
     section(
         "La prima mossa",
-        "Ogni modello deve elaborare la prima candela valida e dichiarare BUY, SELL o HOLD con motivazioni. "
-        "Non e richiesto che tutti comprino: sarebbe una coreografia, non un esperimento. La prima mossa e la "
-        "prima decisione completa, registrata e sottoposta al Risk Engine.",
+        "Alla prima candela reale Coinbase di questa release, ogni corsia esegue una sola sonda paper pari "
+        "all'1% dell'equity su BTC/USDT. La sonda non e un segnale del modello: e un atto deterministico, marcato "
+        "BOOTSTRAP_PROBE, che verifica entro la prima ora l'intera catena di esecuzione. Dati freschi, spread, "
+        "stop-loss e limiti restano sottoposti al Risk Engine. Dopo il fill, ogni strategia torna autonoma.",
     ),
     PageBreak(),
     p("6. Governo, osservabilita e sicurezza", "H1x"),

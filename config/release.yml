@@ -1,4 +1,11 @@
 version: 1
-release_id: bootstrap-paper-v1.2
-created_at: "2026-08-07T10:00:00+02:00"
-description: Bootstrap paper con dashboard HTTPS, PDF metodologico e prime mosse osservabili.
+release_id: bootstrap-paper-v1.3
+created_at: "2026-08-07T10:30:00+02:00"
+description: Bootstrap paper con sonda iniziale deterministica, dashboard HTTPS e PDF metodologico.
+bootstrap_probe:
+  enabled: true
+  symbol: BTC/USDT
+  request_id_prefix: coinbase-BTC-USDT-
+  allocation_pct: 1.0
+  stop_loss_pct: 1.0
+  take_profit_pct: 1.8

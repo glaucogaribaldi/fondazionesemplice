@@ -1,6 +1,6 @@
 # Bootstrap paper
 
-La release `bootstrap-paper-v1.4` esegue una sonda operativa iniziale per rendere verificabile l'intera catena di paper trading.
+La release `bootstrap-paper-v1.5` esegue una sonda operativa iniziale per rendere verificabile l'intera catena di paper trading.
 
 - una sola operazione `BUY` per ciascuna corsia;
 - simbolo fisso `BTC/USDT`;
@@ -21,7 +21,7 @@ Eseguire per almeno 72 ore le cinque corsie su BTC/USDT ed ETH/USDT, verificando
 
 ## Condizioni iniziali
 
-- release `bootstrap-paper-v1.4`;
+- release `bootstrap-paper-v1.5`;
 - timeframe `5m` compatibile con Kronos;
 - capitale virtuale invariato;
 - fee e slippage attivi;
@@ -42,3 +42,5 @@ Se tutte le corsie rimangono `HOLD`, si analizzano forecast, confidenza e reason
 Le release dalla `v1.1` usano una cache Kronos separata da SGLang e possono riscaricare i pesi al primo avvio. Il servizio diventa sano solo dopo caricamento e warm-up completi.
 
 Dalla `v1.4`, lo smoke test usa un ledger effimero separato. Prezzi e operazioni sintetiche non possono modificare equity, posizioni o metriche delle cinque corsie reali paper.
+
+La `v1.5` include `scripts/repair_v13_smoke_drawdown.py`, una riparazione una tantum che accetta soltanto la firma esatta lasciata dal prezzo sintetico `51595` della v1.3. Il comando parte sempre in dry-run e modifica esclusivamente `max_drawdown_pct` quando viene aggiunto `--apply`.

@@ -196,7 +196,7 @@ story = [
             ["Capitale virtuale", "310 USDT per corsia"],
             ["Orizzonte dichiarato", "Ricerca del percorso verso 5.000 USDT"],
             ["Principio sovrano", "Nessun modello puo oltrepassare il Risk Engine"],
-            ["Release metodologica", "bootstrap-paper-v1.4"],
+            ["Release metodologica", "bootstrap-paper-v1.5"],
         ],
         [48 * mm, 112 * mm],
         header=False,

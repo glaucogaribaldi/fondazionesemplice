@@ -19,7 +19,7 @@ services:
       KRONOS_URL: ${KRONOS_URL:-http://kronos:8081}
       NEMOTRON_URL: ${NEMOTRON_URL:-http://nemotron:30000/v1}
       NEMOTRON_MODEL: ${NEMOTRON_MODEL:-nvidia/NVIDIA-Nemotron-Nano-9B-v2}
-      DECISION_TIMEOUT_SECONDS: ${DECISION_TIMEOUT_SECONDS:-20}
+      DECISION_TIMEOUT_SECONDS: ${DECISION_TIMEOUT_SECONDS:-60}
       DATABASE_URL: ${DATABASE_URL:-postgresql://fondazione:fondazione@postgres:5432/fondazione}
     volumes:
       - ./config:/app/config:ro
@@ -44,15 +44,15 @@ services:
       KRONOS_BACKEND: ${KRONOS_BACKEND:-mock}
       KRONOS_MODEL: NeoQuasar/Kronos-base
       KRONOS_TOKENIZER: NeoQuasar/Kronos-Tokenizer-base
-      HF_HOME: /models/huggingface
+      HF_HOME: /models/kronos-huggingface
     volumes:
       - model-cache:/models
     healthcheck:
       test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8081/healthz')"]
       interval: 20s
       timeout: 5s
-      retries: 10
-      start_period: 30s
+      retries: 15
+      start_period: 300s
 
   nemotron-mock:
     <<: *common
@@ -114,6 +114,7 @@ services:
       ARENA_DB_PATH: /data/arena.db
       PAPER_FEE_BPS: ${PAPER_FEE_BPS:-60}
       PAPER_SLIPPAGE_BPS: ${PAPER_SLIPPAGE_BPS:-5}
+      ARENA_DECISION_TIMEOUT_SECONDS: ${ARENA_DECISION_TIMEOUT_SECONDS:-90}
     volumes:
       - ./config:/app/config:ro
       - arena-data:/data

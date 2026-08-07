@@ -1,4 +1,6 @@
+import asyncio
 import os
+from contextlib import asynccontextmanager
 from datetime import datetime
 from functools import lru_cache
 
@@ -8,9 +10,6 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from .helpers import timeframe_delta
-
-
-app = FastAPI(title="Fondazione Kronos Service", version="0.1.0")
 
 
 class Candle(BaseModel):
@@ -34,6 +33,20 @@ class ForecastResponse(BaseModel):
     confidence: float
     volatility: float
     model: str
+
+
+FORECAST_CACHE: dict[tuple, ForecastResponse] = {}
+FORECAST_LOCKS: dict[tuple, asyncio.Lock] = {}
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    if os.getenv("KRONOS_BACKEND") == "real":
+        await asyncio.to_thread(load_predictor)
+    yield
+
+
+app = FastAPI(title="Fondazione Kronos Service", version="0.2.0", lifespan=lifespan)
 
 
 def summarize(last_close: float, predicted: np.ndarray, model: str) -> ForecastResponse:
@@ -107,12 +120,29 @@ async def healthz() -> dict:
 
 @app.post("/v1/forecast", response_model=ForecastResponse)
 async def forecast(request: ForecastRequest) -> ForecastResponse:
+    last_candle = request.candles[-1]
+    cache_key = (
+        request.symbol,
+        request.timeframe,
+        last_candle.timestamp.isoformat(),
+        last_candle.close,
+    )
+    lock = FORECAST_LOCKS.setdefault(cache_key, asyncio.Lock())
     try:
-        return (
-            real_forecast(request)
-            if os.getenv("KRONOS_BACKEND") == "real"
-            else mock_forecast(request)
-        )
+        async with lock:
+            if cached := FORECAST_CACHE.get(cache_key):
+                return cached
+            result = await asyncio.to_thread(
+                real_forecast if os.getenv("KRONOS_BACKEND") == "real" else mock_forecast,
+                request,
+            )
+            FORECAST_CACHE[cache_key] = result
+            if len(FORECAST_CACHE) > 32:
+                FORECAST_CACHE.pop(next(iter(FORECAST_CACHE)))
+            return result
     except Exception as exc:
         detail = f"forecast unavailable: {type(exc).__name__}"
         raise HTTPException(status_code=503, detail=detail) from exc
+    finally:
+        if not lock.locked():
+            FORECAST_LOCKS.pop(cache_key, None)

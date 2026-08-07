@@ -43,6 +43,8 @@ Dettagli: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 Il flusso ChatGPT/Codex → GitHub → OpenClaw → VPS è descritto in [`docs/CONTROL_PLANE.md`](docs/CONTROL_PLANE.md). OpenClaw interviene solo quando richiesto dall’operatore.
 
+La prima messa in osservazione delle cinque corsie segue [`docs/BOOTSTRAP.md`](docs/BOOTSTRAP.md).
+
 ## Avvio locale senza GPU
 
 ```bash

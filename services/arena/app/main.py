@@ -27,6 +27,7 @@ STRATEGY_INFO = Gauge(
     ["lane", "strategy", "ai_enabled", "release_id"],
 )
 INITIAL_CAPITAL = float(os.getenv("INITIAL_CAPITAL", "310"))
+DECISION_TIMEOUT = float(os.getenv("ARENA_DECISION_TIMEOUT_SECONDS", "90"))
 
 
 def lane_ids() -> list[str]:
@@ -121,7 +122,7 @@ async def evaluate(snapshot: dict) -> dict:
         return response.json()
 
     try:
-        async with httpx.AsyncClient(timeout=60) as client:
+        async with httpx.AsyncClient(timeout=DECISION_TIMEOUT) as client:
             decisions = await asyncio.gather(*(call_lane(client, lane) for lane in LANES))
     except Exception as exc:
         raise HTTPException(status_code=503, detail="decision service unavailable") from exc

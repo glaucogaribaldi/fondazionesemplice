@@ -47,6 +47,8 @@ La prima messa in osservazione delle cinque corsie segue [`docs/BOOTSTRAP.md`](d
 
 La pubblicazione HTTPS su `fondazione.pianodivino.com` e il download del PDF metodologico sono descritti in [`docs/PUBLIC_DASHBOARD.md`](docs/PUBLIC_DASHBOARD.md).
 
+Il dossier completo per una revisione indipendente delle regole e delle strategie da parte di un'altra AI e disponibile in [`docs/AI_STRATEGY_REVIEW_DOSSIER.md`](docs/AI_STRATEGY_REVIEW_DOSSIER.md).
+
 ## Avvio locale senza GPU
 
 ```bash
